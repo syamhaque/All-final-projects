@@ -1,230 +1,328 @@
-#include "DIPs.h"
-#include <assert.h>
-#include <string.h>
+/*********************************************************************/
+/* Homework Assignment 5, for EECS 22, Fall 2017                     */
+/*                                                                   */
+/* Author: Tim Schmidt                                               */
+/* Date: 11/09/2017                                                  */
+/*                                                                   */
+/* DIPs.c: source file for DIP operations                            */
+/*                                                                   */
+/*********************************************************************/
+
 #include <stdlib.h>
-#include <time.h>
-#include <stdio.h>
+#include <assert.h>
+#include <math.h>
+#include "DIPs.h"
+#include "Constants.h"
 
-/* Example of DIP */
-/* make the picture color black & white */
-IMAGE *BlackNWhite(IMAGE *image){
-    assert(image);
-    int             x, y, tmp;
-	int W = ImageWidth(image), H = ImageHeight(image);
+/* Aging */
+IMAGE *Aging(IMAGE *image)
+{
+	unsigned int x, y;
 
-    for (y = 0; y < H; y++)
-    {
-        for (x = 0; x < W; x++)
-        {
-            tmp = (GetPixelR(image, x, y) + GetPixelG(image, x, y) + GetPixelB(image, x, y)) / 3;
-            SetPixelR(image, x, y, tmp);
-            SetPixelG(image, x, y, tmp);
-            SetPixelB(image, x, y, tmp);
-        }
-    }
-    return image;
-}
+	assert(image);
 
-/* reverse image color */
-IMAGE *Negative(IMAGE *image) {
-    assert(image);
-    int x, y, tmpR, tmpG, tmpB;
-	int W = ImageWidth(image), H = ImageHeight(image);
-    for (y = 0; y < H; y++) {
-        for (x = 0; x < W; x++) {
-            tmpR = MAX_PIXEL - GetPixelR(image, x, y);
-            tmpG = MAX_PIXEL - GetPixelG(image, x, y);
-            tmpB = MAX_PIXEL - GetPixelB(image, x, y);
-            SetPixelR(image, x, y, tmpR);
-            SetPixelG(image, x, y, tmpG);
-            SetPixelB(image, x, y, tmpB);
-
-        }
-    }
-    return image;
-}
-
-/*colorfiler */
-IMAGE *ColorFilter(IMAGE *image, int target_r, int target_g, int target_b, int threshold, int replace_r, int replace_g, int replace_b){
-    assert(image);
-    replace_r = (replace_r > MAX_PIXEL)? MAX_PIXEL : (replace_r < 0) ? 0 : replace_r;
-    replace_g = (replace_g > MAX_PIXEL)? MAX_PIXEL : (replace_g < 0) ? 0 : replace_g;
-    replace_b = (replace_b > MAX_PIXEL)? MAX_PIXEL : (replace_b < 0) ? 0 : replace_b;
-    int x, y;
-	int W = ImageWidth(image), H = ImageHeight(image);
-    for (y = 0; y < H; y++){
-        for (x = 0; x < W; x++){
-            if (abs(GetPixelR(image, x, y) - target_r) <= threshold
-                    && abs(GetPixelG(image, x, y) - target_g) <= threshold
-                    && abs(GetPixelB(image, x, y) - target_b) <= threshold) {
-                SetPixelR(image, x, y, replace_r);
-                SetPixelG(image, x, y, replace_g);
-                SetPixelB(image, x, y, replace_b);
-            }
-        }
-    }
-    return image;
-}
-
-/* Add edge to the image*/
-IMAGE *Edge(IMAGE *image) {
-	int W = ImageWidth(image), H = ImageHeight(image);
-    int             x, y, m, n, a, b;
-
-	IMAGE *edge = NULL;
-	edge = CreateImage(W, H);	
-
-    for (y = 0; y < H; y++){
-        for (x = 0; x < W; x++) {
-            SetPixelR(edge, x, y, GetPixelR(image, x, y));
-            SetPixelG(edge, x, y, GetPixelG(image, x, y));
-            SetPixelB(edge, x, y, GetPixelB(image, x, y));
-			
-        }
-    }
-
-    int sumR = 0;   /* sum of the intensity differences with neighbors */
-    int sumG = 0;
-    int sumB = 0;
-
-    for (y = 1; y < H - 1; y++){
-        for (x = 1; x < W - 1; x++){
-            for (n = -1; n <= 1; n++){
-                for (m = -1; m <= 1; m++) {
-                    a = (x + m >= W) ? W - 1 : (x + m < 0) ? 0 : x + m;
-                    b = (y + n >= H) ? H - 1 : (y + n < 0) ? 0 : y + n;
-                    sumR += (GetPixelR(edge, x, y) - GetPixelR(edge, a, b));
-                    sumG += (GetPixelG(edge, x, y) - GetPixelG(edge, a, b));
-                    sumB += (GetPixelB(edge, x, y) - GetPixelB(edge, a, b));
-
-                }
-            }
-            SetPixelR(image, x, y, (sumR > MAX_PIXEL) ? MAX_PIXEL: (sumR < 0) ? 0: sumR);
-            SetPixelG(image, x, y, (sumG > MAX_PIXEL) ? MAX_PIXEL: (sumG < 0) ? 0: sumG);
-            SetPixelB(image, x, y, (sumB > MAX_PIXEL) ? MAX_PIXEL: (sumB < 0) ? 0: sumB);
-
-            sumR = sumG = sumB = 0;
-			
-        }
-    }
-	DeleteImage(edge);
-	edge = NULL;
-    return image;
-}
-
-
-/* flip image vertically */
-IMAGE *VFlip(IMAGE *image){
-    assert(image);
-	int W = ImageWidth(image), H = ImageHeight(image);
-    int             x, y;
-    unsigned char   r, g, b;
-	unsigned char tmpR, tmpG, tmpB;
-
-	for (y = 0; y < H/2; y ++){
-        for (x = 0; x < W; x ++){
-            r = GetPixelR(image, x, (H - y - 1));
-            g = GetPixelG(image, x, (H - y - 1));
-            b = GetPixelB(image, x, (H - y - 1));
-
-			tmpR = GetPixelR(image, x, y);
-			tmpG = GetPixelG(image, x, y);
-			tmpB = GetPixelB(image, x, y);
-			
-			SetPixelR(image, x, (H - y - 1), tmpR);
-			SetPixelG(image, x, (H - y - 1), tmpG);
-			SetPixelB(image, x, (H - y - 1), tmpB);
-
-            SetPixelR(image, x, y, r);
-			SetPixelG(image, x, y, g);
-			SetPixelB(image, x, y, b);
-        }
-    }
-    return image;
-}
-
-/* mirror image vertically */
-IMAGE *VMirror(IMAGE *image) {
-    assert(image);
-    int x, y, tmpR, tmpG, tmpB;
-	int W = ImageWidth(image), H = ImageHeight(image);
-    for (y = 0; y < H / 2; y ++) {
-        for (x = 0; x < W; x ++) {
-            tmpR = GetPixelR(image, x, (H - y - 1));
-            tmpG = GetPixelG(image, x, (H - y - 1));
-            tmpB = GetPixelB(image, x, (H - y - 1));
-            SetPixelR(image, x, y, tmpR);
-            SetPixelG(image, x, y, tmpG);
-            SetPixelB(image, x, y, tmpB);
-        }
-    }
-    return image;
-}
-
-/* Shuffle the image */
-IMAGE *Shuffle(IMAGE *image){
-	int W = ImageWidth(image), H = ImageHeight(image);
-    int block_cnt = SHUFF_HEIGHT_DIV * SHUFF_WIDTH_DIV;
-    int block_width = W/SHUFF_WIDTH_DIV;
-    int block_height = H/SHUFF_HEIGHT_DIV;
-    int block[SHUFF_WIDTH_DIV][SHUFF_HEIGHT_DIV];
-    int i, j;
-    
-
-    srand(time(NULL));
-    /* Initialize block markers to not done (-1) */
-    for (i = 0; i < SHUFF_WIDTH_DIV; i++) {
-        for (j = 0; j< SHUFF_HEIGHT_DIV; j++) {
-            block[i][j] = -1;
-        }
-    }
-
-    while (block_cnt > 0) {
-        /* Generate a random pair of blocks */
-        int dest_height = rand() % SHUFF_HEIGHT_DIV;
-        int dest_width = rand() % SHUFF_WIDTH_DIV;
-        int src_height = rand() % SHUFF_HEIGHT_DIV;
-        int src_width = rand() % SHUFF_WIDTH_DIV;
-
-        /* Check if these blocks are already swaped, if not swap blocks */
-        if ((block[dest_width][dest_height] == -1) && (block[src_width][src_height] == -1)) {
-            /* Swap blocks */
-            for (i = 0; i < block_height; i++) {
-                /* Init src and dest height offset */
-                int h_dest = ((dest_height * block_height) + i) % H;
-                int h_src  = ((src_height * block_height) + i) % H; 
-                for (j = 0; j < block_width; j++) {
-                    int temp, temps;
-                    /* Init src and dest width offset */
-                    int w_src  = ((src_width * block_width) + j) % W; 
-                    int w_dest = ((dest_width * block_width) + j) % W;
-
-                    temp = GetPixelR(image, w_dest, h_dest);
-                    temps = GetPixelR(image, w_src, h_src);
-					SetPixelR(image, w_dest, h_dest, temps);
-					SetPixelR(image, w_src, h_src, temp);
-
-                    temp = GetPixelG(image, w_dest, h_dest);
-                    temps = GetPixelG(image, w_src, h_src);
-                    SetPixelG(image, w_dest, h_dest, temps);
-                    SetPixelG(image, w_src, h_src, temp);
-
-                    temp = GetPixelB(image, w_dest, h_dest);
-                    temps = GetPixelB(image, w_src, h_src);
-                    SetPixelB(image, w_dest, h_dest, temps);
-                    SetPixelB(image, w_src, h_src, temp);
-                }
-            }
-            /* Set marker as done */
-            block[dest_width][dest_height] = 1;
-            block[src_width][src_height] = 1;
-            /* Decrease block count */
-            block_cnt -= 2; /* Two blocks are swapped */
+	for (x = 0; x < image->W; x++) {
+		for (y = 0; y < image->H; y++) {
+			SetPixelB(image, x, y, (GetPixelR(image, x, y) +
+									GetPixelG(image, x, y) +
+									GetPixelB(image, x, y)) / 5);
+			SetPixelR(image, x, y, GetPixelB(image, x, y) * 1.6);
+			SetPixelG(image, x, y, GetPixelB(image, x, y) * 1.6);
 		}
-        
-    }
+	}
+
 	return image;
 }
 
+/* Horizontal flip */
+IMAGE *HFlip(IMAGE *image)
+{
+	unsigned int x, y;
+	unsigned char R, G, B;
+	unsigned int width, height;
 
-/* vim: set tabstop=4 softtabstop=4 shiftwidth=4 noexpandtab : */
+	assert(image);
+
+	width = image->W;
+	height = image->H;
+
+	for (x = 0; x < width / 2; x++) {
+		for (y = 0; y < height; y++) {
+			R = GetPixelR(image, width - 1 - x, y);
+			G = GetPixelG(image, width - 1 - x, y);
+			B = GetPixelB(image, width - 1 - x, y);
+
+			SetPixelR(image, width - 1 - x, y, GetPixelR(image, x, y));
+			SetPixelG(image, width - 1 - x, y, GetPixelG(image, x, y));
+			SetPixelB(image, width - 1 - x, y, GetPixelB(image, x, y));
+
+			SetPixelR(image, x, y, R);
+			SetPixelG(image, x, y, G);
+			SetPixelB(image, x, y, B);
+		}
+	}
+
+	return image;
+}
+
+/* Edge detection */
+IMAGE *Edge(IMAGE *image)
+{
+	unsigned int x, y;
+	int i, j;
+	int tmpR = 0;
+	int tmpG = 0;
+	int tmpB = 0;
+	unsigned int width, height;
+
+	assert(image);
+
+	width = image->W;
+	height = image->H;
+
+	IMAGE *tmpImage = CreateImage(width, height);
+
+	for (x = 0; x < width; x++) {
+		for (y = 0; y < height; y++) {
+			SetPixelR(tmpImage, x, y, GetPixelR(image, x, y));
+			SetPixelG(tmpImage, x, y, GetPixelG(image, x, y));
+			SetPixelB(tmpImage, x, y, GetPixelB(image, x, y));
+		}
+	}
+
+	for (x = 1; x < width - 1; x++) {
+		for (y = 1; y < height - 1; y++) {
+			tmpR = 0;
+			tmpG = 0;
+			tmpB = 0;
+
+			for (i = -1; i <= 1; i++) {
+				for (j = -1; j <= 1; j++) {
+					tmpR += GetPixelR(tmpImage, x, y) -
+					        GetPixelR(tmpImage, x + i, y + j);
+					tmpG += GetPixelG(tmpImage, x, y) -
+					        GetPixelG(tmpImage, x + i, y + j);
+					tmpB += GetPixelB(tmpImage, x, y) -
+					        GetPixelB(tmpImage, x + i, y + j);
+				}
+			}
+
+			SetPixelR(image, x, y, tmpR > 255 ? 255 : (tmpR < 0 ? 0 : tmpR));
+			SetPixelG(image, x, y, tmpG > 255 ? 255 : (tmpG < 0 ? 0 : tmpG));
+			SetPixelB(image, x, y, tmpB > 255 ? 255 : (tmpB < 0 ? 0 : tmpB));
+		}
+	}
+
+	for (x = 0; x < width; x++) {
+		y = 0;
+		SetPixelR(image, x, y, 0);
+		SetPixelG(image, x, y, 0);
+		SetPixelB(image, x, y, 0);
+		y = height - 1;
+		SetPixelR(image, x, y, 0);
+		SetPixelG(image, x, y, 0);
+		SetPixelB(image, x, y, 0);
+	}
+
+	for (y = 0; y < height; y++) {
+		x = 0;
+		SetPixelR(image, x, y, 0);
+		SetPixelG(image, x, y, 0);
+		SetPixelB(image, x, y, 0);
+		x = width - 1;
+		SetPixelR(image, x, y, 0);
+		SetPixelG(image, x, y, 0);
+		SetPixelB(image, x, y, 0);
+	}
+
+	DeleteImage(tmpImage);
+	return image;
+}
+
+/* Add a watermark to an image */
+IMAGE *Watermark(IMAGE *image, const IMAGE *watermark,
+                 unsigned int topLeftX, unsigned int topLeftY)
+{
+	unsigned int x, y;
+	unsigned int R, G, B;
+
+	assert(image);
+	assert(watermark);
+
+	for (x = 0; x < watermark->W; x++) {
+		for (y = 0; y < watermark->H; y++) {
+			if (topLeftX + x < image->W&&
+				topLeftY + y < image->H) {
+				if (GetPixelR(watermark, x, y) == 0 &&
+					GetPixelG(watermark, x, y) == 0 &&
+					GetPixelB(watermark, x, y) == 0) {
+					R = GetPixelR(image, topLeftX + x, topLeftY + y);
+					G = GetPixelG(image, topLeftX + x, topLeftY + y);
+					B = GetPixelB(image, topLeftX + x, topLeftY + y);
+
+					if (R * WATERMARK_RATIO > 255) {
+						SetPixelR(image, topLeftX + x, topLeftY + y, 255);
+					} else {
+						SetPixelR(image, topLeftX + x, topLeftY + y,
+						          R * WATERMARK_RATIO);
+					}
+
+					if (G * WATERMARK_RATIO > 255) {
+						SetPixelG(image, topLeftX + x, topLeftY + y, 255);
+					} else {
+						SetPixelG(image, topLeftX + x, topLeftY + y,
+						          G * WATERMARK_RATIO);
+					}
+
+					if (B * WATERMARK_RATIO > 255) {
+						SetPixelB(image, topLeftX + x, topLeftY + y, 255);
+					} else {
+						SetPixelB(image, topLeftX + x, topLeftY + y,
+						          B * WATERMARK_RATIO);
+					}
+				}
+			}
+		}
+	}
+
+	return image;
+}
+
+/* Spotlight */
+IMAGE *Spotlight(IMAGE *image, int centerX, int centerY, unsigned int radius)
+{
+    unsigned int x, y;
+    unsigned int width, height;
+
+    assert(image);
+
+    width = image->W;
+    height = image->H;
+
+    for (x = 0; x < width; x++) {
+       for (y = 0; y < height; y++) {
+                    
+        }
+    }
+    return image;
+}
+
+/* Zoom an image */
+IMAGE *Zoom(IMAGE *image, unsigned int percentage)
+{
+	unsigned int x, y;
+	unsigned int x1, y1, x2, y2;
+	unsigned int i, j;
+	unsigned int tmpR, tmpG, tmpB;
+	unsigned int width, height;
+	unsigned int resWidth, resHeight;
+	unsigned int hBorderWidth, vBorderWidth;
+	IMAGE *resImage = NULL;
+
+	assert(image);
+	assert(percentage <= 100);
+	assert(percentage % 2 == 0);
+
+	width = image->W;
+	height = image->H;
+
+	if (percentage == 0) {
+		for (x = 0; x < width; x++) {
+			for (y = 0; y < height; y++) {
+				SetPixelR(image, x, y, 0);
+				SetPixelG(image, x, y, 0);
+				SetPixelB(image, x, y, 0);
+			}
+		}
+	} else {
+		resWidth = width * percentage / 100;
+		resHeight = height * percentage / 100;
+
+		hBorderWidth = (height - resHeight) / 2;
+		vBorderWidth = (width - resWidth) / 2;
+
+		/* Create the resized image */
+		resImage = CreateImage(resWidth, resHeight);
+		if (resImage == NULL) {
+			return image;
+		}
+
+		for (x = 0; x < resWidth; x++) {
+			for (y = 0; y < resHeight; y++) {
+				x1 = x / (percentage / 100.0);
+				y1 = y / (percentage / 100.0);
+				x2 = (x + 1) / (percentage / 100.0);
+				y2 = (y + 1) / (percentage / 100.0);
+				tmpR = 0;
+				tmpG = 0;
+				tmpB = 0;
+
+				for (i = x1; i < x2; i++) {
+					for (j = y1; j < y2; j++) {
+						tmpR += GetPixelR(image, i, j);
+						tmpG += GetPixelG(image, i, j);
+						tmpB += GetPixelB(image, i, j);
+					}
+				}
+
+				SetPixelR(resImage, x, y, tmpR / ((x2 - x1) * (y2 - y1)));
+				SetPixelG(resImage, x, y, tmpG / ((x2 - x1) * (y2 - y1)));
+				SetPixelB(resImage, x, y, tmpB / ((x2 - x1) * (y2 - y1)));
+			}
+		}
+
+		/* Add the top horizontal border */
+		for (x = 0; x < width; x++) {
+			for (y = 0; y < hBorderWidth; y++) {
+				SetPixelR(image, x, y, 0);
+				SetPixelG(image, x, y, 0);
+				SetPixelB(image, x, y, 0);
+			}
+		}
+
+		/* Add the left vertical border */
+		for (x = 0; x < vBorderWidth; x++) {
+			for (y = hBorderWidth; y < hBorderWidth + resHeight; y++) {
+				SetPixelR(image, x, y, 0);
+				SetPixelG(image, x, y, 0);
+				SetPixelB(image, x, y, 0);
+			}
+		}
+
+		/* Add the resized image */
+		for (x = vBorderWidth; x < vBorderWidth + resWidth; x++) {
+			for (y = hBorderWidth; y < hBorderWidth + resHeight; y++) {
+				SetPixelR(image, x, y,
+				          GetPixelR(resImage, x - vBorderWidth, y - hBorderWidth));
+				SetPixelG(image, x, y,
+				          GetPixelG(resImage, x - vBorderWidth, y - hBorderWidth));
+				SetPixelB(image, x, y,
+				          GetPixelB(resImage, x - vBorderWidth, y - hBorderWidth));
+			}
+		}
+
+		/* Add the right vertical border */
+		for (x = vBorderWidth + resWidth; x < width; x++) {
+			for (y = hBorderWidth; y < hBorderWidth + resHeight; y++) {
+				SetPixelR(image, x, y, 0);
+				SetPixelG(image, x, y, 0);
+				SetPixelB(image, x, y, 0);
+			}
+		}
+
+		/* Add the bottom horizontal border */
+		for (x = 0; x < width; x++) {
+			for (y = hBorderWidth + resHeight; y < height; y++) {
+				SetPixelR(image, x, y, 0);
+				SetPixelG(image, x, y, 0);
+				SetPixelB(image, x, y, 0);
+			}
+		}
+
+		DeleteImage(resImage);
+	}
+
+	return image;
+}
+
+/* EOF */
