@@ -1,35 +1,28 @@
-/*********************************************************************/
-/* Homework Assignment 5, for EECS 22, Fall 2017                     */
-/*                                                                   */
-/* Author: Tim Schmidt                                               */
-/* Date: 11/09/2017                                                  */
-/*                                                                   */
-/* DIPs.h: header file for DIP operations                            */
-/*                                                                   */
-/*********************************************************************/
-
-#ifndef DIPS_H
-#define DIPS_H
-
+#ifndef DIPS_H_INCLUDED_
+#define DIPS_H_INCLUDED_
 #include "Image.h"
+#include "Constants.h"
+/* change color image to black & white */
+IMAGE *BlackNWhite(IMAGE *image);
 
-/* Aging */
-IMAGE *Aging(IMAGE *image);
+/* reverse image color */
+IMAGE *Negative(IMAGE *image);
 
-/* Horizontal flip */
-IMAGE *HFlip(IMAGE *image);
+/* color filter */
+IMAGE *ColorFilter(IMAGE *image, int target_r, int target_g, int target_b, int threshold, int replace_r, int replace_g, int replace_b);
 
-/* Edge detection */
+/* edge detection */
 IMAGE *Edge(IMAGE *image);
 
-/* Add a watermark to an image */
-IMAGE *Watermark(IMAGE *image, const IMAGE *watermark,
-                 unsigned int topLeftX, unsigned int topLeftY);
+/* Shuffle the image */
+IMAGE *Shuffle(IMAGE *image);
 
-/* Spotlight */
-IMAGE *Spotlight(IMAGE *image, int centerX, int centerY, unsigned int radius);
+/* mirror image vertically */
+IMAGE *VFlip(IMAGE *image);
 
-/* Zoom an image */
-IMAGE *Zoom(IMAGE *image, unsigned int percentage);
+/* flip image vertically */
+IMAGE *VMirror(IMAGE *image);
 
-#endif
+#endif /* DIPS_H_INCLUDED_ */
+
+/* vim: set tabstop=8 softtabstop=8 shiftwidth=8 noexpandtab : */

@@ -1,14 +1,15 @@
+/*********************************************************************/ 
+/* FileIO.c: program file for I/O module	                     */ 
+/*                                                                   */
+/* 11/01/17 Mihnea Chirila updated for EECS22 assignment 4 Fall2017  */
+/* 10/31/16 Huan Chen    updated for EECS22 assignment4 Fall2016     */
+/* 11/03/15 Guantao Liu  updated for EECS22 assignment4 Fall2015     */
+/* 10/29/13 Alex Chu     updated for EECS22 assignment4 Fall2013     */
+/* 10/16/11 Weiwei Chen  updated for EECS22 assignment3 FAll2012     */
+/* 10/07/11 Weiwei Chen: initial solution version                    */
+/*                       for EECS22 assignment3 FAll2011             */
 /*********************************************************************/
-/* Homework Assignment 5, for EECS 22, Fall 2017                     */
-/*                                                                   */
-/* Author: Tim Schmidt                                               */
-/* Date: 11/09/2017                                                  */
-/*                                                                   */
-/* FileIO.c: source file for basic file manipulations                */
-/*                                                                   */
-/*********************************************************************/
-
-#include <stdio.h>
+#include <stdio.h> 
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -22,9 +23,11 @@ IMAGE *LoadImage(const char *fname)
 	char         Type[SLEN];
 	int          W, H, MaxValue;
 	unsigned int x, y;
-	char         fname_tmp[SLEN];
+	char         ftype[] = ".ppm";
+	char         fname_tmp[SLEN];  
 	IMAGE        *image;
 	strcpy(fname_tmp, fname);
+	strcat(fname_tmp, ftype);
 	File = fopen(fname_tmp, "r");
 	if (!File) {
 #ifdef DEBUG
@@ -81,13 +84,13 @@ IMAGE *LoadImage(const char *fname)
 	if (!image) {
 #ifdef DEBUG
 		printf("\nError creating image from %s!\n", fname_tmp);
-#endif
+#endif		
 		fclose(File);
 		return NULL;
 	}
 	else {
-		for (y = 0; y < image->H; y++)
-			for (x = 0; x < image->W; x++) {
+		for (y = 0; y < ImageHeight(image); y++)
+			for (x = 0; x < ImageWidth(image); x++) {
 				SetPixelR(image, x, y, fgetc(File));
 				SetPixelG(image, x, y, fgetc(File));
 				SetPixelB(image, x, y, fgetc(File));
@@ -115,12 +118,14 @@ int SaveImage(const char *fname, const IMAGE *image)
 	FILE         *File;
 	int          x, y;
 	char         SysCmd[SLEN * 5];
-	char         fname_tmp[SLEN];
+	char         ftype[] = ".ppm";
+	char         fname_tmp[SLEN];  
 	char         fname_tmp2[SLEN];
-	unsigned int WIDTH = image->W;
-	unsigned int HEIGHT = image->H;
+	unsigned int WIDTH = ImageWidth(image);
+	unsigned int HEIGHT = ImageHeight(image);
 	strcpy(fname_tmp, fname);
 	strcpy(fname_tmp2, fname);
+	strcat(fname_tmp2, ftype);
 
 	File = fopen(fname_tmp2, "w");
 	if (!File) {
@@ -167,5 +172,3 @@ int SaveImage(const char *fname, const IMAGE *image)
 #endif
 	return 0;
 }
-
-/* EOF */
