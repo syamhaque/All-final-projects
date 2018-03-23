@@ -1,0 +1,94 @@
+#include <gtk/gtk.h>
+#ifndef GUI_H
+#define GUI_H
+
+/*struct to hold user's name and password when passing to other functions*/
+typedef struct User_Credentials {
+	gchar  *username;
+	gchar *password;
+	GtkWidget *username_entry;
+	GtkWidget *password_entry;
+	GtkWidget *password_entry2;
+}USER;
+
+/*struct to hold data to pass to functions*/
+typedef struct Data{
+	gpointer *data1;
+	gpointer *data2;
+	gpointer *data3;
+}DATA;
+
+/* make structs called friends, friendslist, friendsentry for functions addfriend, deletefriend, etc.*/
+typedef struct Friends
+{
+	gpointer *friends;
+	int manage;
+}FRIENDS;
+
+typedef struct FriendsList FLIST;
+typedef struct FriendsEntry FENTRY;
+
+struct FriendsList{
+	int length;
+	FENTRY *First;
+	FENTRY *Last;
+};
+
+struct FriendsEntry{
+	FLIST *List;
+	FENTRY *Next;
+	FENTRY *Prev;
+	FRIENDS *Friends;
+};
+
+/*quits the window*/
+gboolean delete_event(GtkWidget *widget, GdkEvent *event, gpointer data);
+
+/*Checks the textbox entries and if they are filled attempts a mock login*/
+void gui_login(GtkWidget *widget, gpointer user);
+
+/*Asks a new user for username and password and registers the user.*/
+void gui_registerUser(GtkWidget *widget, gpointer user);
+
+/*Makes the register new user screen*/
+void gui_registerScreen(GtkWidget *widget);
+
+/*Makes the Log In screen*/
+void gui_loginScreen(gpointer user);
+
+/*Makes the main screen of the program. From here the user can access contacts and send messages.*/
+void gui_mainScreen(GtkWidget *widget, gpointer data);
+
+/*Sends the message*/
+void gui_sendMessage(GtkWidget *widget, gpointer data);
+
+/*contacts list*/
+void gui_contactsList(GtkWidget *widget, gchar *username);
+
+/* enter username to delete or add friend */
+void gui_manageFriends(GtkWidget *widget, gpointer friends);
+
+/* window that manages friends*/
+void gui_manageFriendsWindow(GtkWidget *widget);
+
+// /* allocates memory for new friend*/
+// FRIENDS *NewFriend(gpointer friends);
+
+// /* frees memory for friend */
+// void DeleteFriend(FRIENDS *friends_tmp);
+
+// /* allocates memory to create list for friends */
+// FLIST *NewFriendsList(void)
+
+// /* frees memory of list of friends (might not be needed) */
+// void DeleteFriendsList(FLIST *l)
+
+// /* adds friend to the end of contact list */
+// void AddFriend(FLIST *l, FRIENDS *friends_tmp)
+
+void gui_showText(GtkWidget *widget, char *text);
+
+gboolean on_expose_event (GtkWidget *widget, GdkEventExpose *event, gpointer data);
+
+#endif
+

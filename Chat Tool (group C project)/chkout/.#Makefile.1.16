@@ -1,0 +1,59 @@
+### MAKEFILE ###
+
+#VARIABLES
+SDIR 	= ./src/
+
+### TARGETS ###
+
+#Target for usage help
+h:
+	@echo ""
+	@echo "Type \"make all\" to create both the client and server executables"
+	@echo "Type \"make server\" to create the server execuatble"
+	@echo "Type \"make client\" to create the client executable"	
+	@echo "Type \"make GUI_Client\" to create the GUI version of the client program"
+	@echo "Type \"make clean\" to delete all *.o and executable files"
+	@echo "Type \"make tar\" to create Chat_Alpha_src.tar.gz"
+	@echo "All executable files will be found in the $(ODIR) directory and all *.o files will be found in the $(SDIR) directory"
+	@echo ""
+
+#Target to make all
+Full_Client:
+	cd $(SDIR) && make Full_Client
+
+server:
+	cd $(SDIR) && make server
+
+client:
+	cd $(SDIR) && make client
+
+GUI_Client: 
+	cd $(SDIR) && make GUI_Client
+	
+Test_GUI:
+	cd $(SDIR) && make Test_GUI
+
+Test_Contacts:
+	cd $(SDIR) && make Test_Contacts
+
+clean:
+	cd $(SDIR) && make clean
+
+clean_tar:
+	rm *.gz
+
+tar_user:
+	make clean
+	make client
+	make GUI_Client
+	gtar -cvzf Chat_Alpha.tar.gz doc bin README.txt INSTALL.txt COPYRIGHT.txt
+	make clean
+
+tar:
+	make clean
+	make server
+	make client
+	make GUI_Client
+	gtar -cvzf Chat_Alpha_src.tar.gz doc bin src Makefile README.txt INSTALL.txt COPYRIGHT.txt
+	make clean
+	gtar -cvzf Chat_Alpha_src.tar.gz src bin Makefile doc README.txt INSTALL.txt COPYRIGHT.txt

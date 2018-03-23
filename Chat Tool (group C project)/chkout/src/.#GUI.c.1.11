@@ -1,0 +1,347 @@
+#include <gtk/gtk.h>
+#include "GUI.h"
+
+/*Checks the textbox entries and if they are filled attempts a mock login*/
+void gui_login(GtkWidget *widget, gpointer user){
+	USER *user_tmp = (USER*) user;
+	if(gtk_entry_get_text_length(GTK_ENTRY(user_tmp->username_entry)) == 0){
+		g_print("Please enter an username.\n");
+	}
+	else if(gtk_entry_get_text_length(GTK_ENTRY(user_tmp->password_entry)) == 0){
+		g_print("Please enter a password.\n");
+	}
+	else{
+		user_tmp->username = gtk_entry_get_text(GTK_ENTRY(user_tmp->username_entry));
+		user_tmp->password = gtk_entry_get_text(GTK_ENTRY(user_tmp->password_entry));
+		g_print("Login attempted with username %s and password %s\n", user_tmp->username, user_tmp->password);
+		gtk_widget_hide(gtk_widget_get_toplevel (widget));
+		gui_mainScreen(NULL, NULL);
+	}
+}
+
+/*quits the window*/
+gboolean delete_event(GtkWidget *widget, GdkEvent *event, gpointer data){
+	gtk_main_quit();
+	return FALSE;
+}
+
+/*Asks a new user for username and password and registers the user.*/
+void gui_registerUser(GtkWidget *widget, gpointer user){
+	USER *user_tmp = (USER*) user;
+	if(gtk_entry_get_text_length(GTK_ENTRY(user_tmp->username_entry)) == 0){
+		g_print("Please enter an username.\n");
+	}
+	else if(gtk_entry_get_text_length(GTK_ENTRY(user_tmp->password_entry)) == 0){
+		g_print("Please enter a password.\n");
+	}
+	else if(gtk_entry_get_text_length(GTK_ENTRY(user_tmp->password_entry2)) == 0){
+		g_print("Please confirm password.\n");
+	}
+	else if(!g_strcmp0(gtk_entry_get_text(GTK_ENTRY(user_tmp->password_entry)), gtk_entry_get_text(GTK_ENTRY(user_tmp->password_entry2)))){
+		user_tmp->username = gtk_entry_get_text(GTK_ENTRY(user_tmp->username_entry));
+		user_tmp->password = gtk_entry_get_text(GTK_ENTRY(user_tmp->password_entry));
+		g_print("Registration attempted with username %s and password %s\n", user_tmp->username, user_tmp->password);
+		g_free(user_tmp);
+		gtk_widget_destroy(gtk_widget_get_toplevel (widget));
+		g_list_foreach(gtk_window_list_toplevels (), (GFunc)gtk_widget_show_all, NULL);
+	}
+	else{
+		g_print("Password fields do not match!\n");
+	}
+}
+
+/*Makes the Log In screen*/
+void gui_loginScreen(gpointer user){
+	GtkWidget *window;
+	GtkWidget *user_entry, *pass_entry;
+	GtkWidget *button;
+	GtkWidget *box;
+	GtkWidget *label;
+	USER *user_data = (USER*) user;
+	
+	/*Create window*/
+	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_default_size((GtkWindow*) window, 500, 500);
+	
+	/*Connects delete_event signal to main window so that it closes when the X is clicked*/
+	g_signal_connect(window, "delete_event", G_CALLBACK(delete_event), NULL);
+	gtk_container_set_border_width(GTK_CONTAINER(window), 10);
+	
+	/*Create a vertical box (vbox) to put the text entry fields and login, register, etc. buttons*/
+	box = gtk_vbox_new(FALSE, 0);
+	
+	/*Creates entry for username*/
+	label = gtk_label_new("Username");
+	gtk_box_pack_start(GTK_BOX(box),label,FALSE,FALSE,0);
+	gtk_widget_show(label);
+	user_entry = gtk_entry_new();
+	user_data->username_entry = user_entry;
+	g_signal_connect(user_entry, "activate", G_CALLBACK(gui_login), user_data);
+	gtk_box_pack_start(GTK_BOX(box),user_entry,FALSE,FALSE,0);
+	gtk_widget_show(user_entry);
+		
+	/*Creates entry for password*/
+	label = gtk_label_new("Password");
+	gtk_box_pack_start(GTK_BOX(box),label,FALSE,FALSE,0);
+	gtk_widget_show(label);
+	pass_entry = gtk_entry_new();
+	user_data->password_entry = pass_entry;
+	gtk_entry_set_visibility(GTK_ENTRY(pass_entry), FALSE);
+	g_signal_connect(pass_entry, "activate", G_CALLBACK(gui_login), user_data);
+	gtk_box_pack_start(GTK_BOX(box),pass_entry,FALSE,FALSE,0);
+	gtk_widget_show(pass_entry);
+	
+	/*Creates login button*/
+	button = gtk_button_new_with_label("Login");
+	g_signal_connect(button, "clicked", G_CALLBACK(gui_login), user_data);
+	gtk_box_pack_start(GTK_BOX(box),button,FALSE,FALSE,0);
+	gtk_widget_show(button);
+	
+	/*Creates register button*/
+	button = gtk_button_new_with_label("Register");
+	g_signal_connect_swapped(button, "clicked", G_CALLBACK(gtk_widget_hide), window);
+	g_signal_connect(button, "clicked", G_CALLBACK(gui_registerScreen), NULL);
+	gtk_box_pack_start(GTK_BOX(box),button,FALSE,FALSE,0);
+	gtk_widget_show(button);
+	
+	gtk_widget_show(box);
+	gtk_container_add(GTK_CONTAINER(window), box);
+	gtk_widget_show(window);
+}
+
+/*Makes the register new user screen*/
+void gui_registerScreen(GtkWidget *widget){
+	GtkWidget *register_window;
+	GtkWidget *name_entry, *pass_entry1, *pass_entry2;
+	GtkWidget *button;
+	GtkWidget *box;
+	GtkWidget *label;
+	USER *user_tmp = g_malloc(sizeof(*user_tmp));
+	user_tmp->username_entry = NULL;
+	user_tmp->password_entry = NULL;
+	/*Create new window*/
+	register_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_default_size((GtkWindow*) register_window, 500, 500);
+	g_signal_connect(register_window, "delete_event", G_CALLBACK(delete_event), NULL);
+	gtk_container_set_border_width(GTK_CONTAINER(register_window), 10);
+	/*Create a vertical box (vbox) to put the text entry fields and register button*/
+	box = gtk_vbox_new(FALSE, 0);
+	/*Creates entry for username*/
+	label = gtk_label_new("Username");
+	gtk_box_pack_start(GTK_BOX(box),label,FALSE,FALSE,0);
+	gtk_widget_show(label);
+	name_entry = gtk_entry_new();
+	user_tmp->username_entry = name_entry;
+	g_signal_connect(name_entry, "activate", G_CALLBACK(gui_registerUser), user_tmp);
+	gtk_box_pack_start(GTK_BOX(box),name_entry,FALSE,FALSE,0);
+	gtk_widget_show(name_entry);
+	/*Creates entry for password*/
+	label = gtk_label_new("Password");
+	gtk_box_pack_start(GTK_BOX(box),label,FALSE,FALSE,0);
+	gtk_widget_show(label);
+	pass_entry1 = gtk_entry_new();
+	user_tmp->password_entry = pass_entry1;
+	gtk_entry_set_visibility(GTK_ENTRY(pass_entry1), FALSE);
+	g_signal_connect(pass_entry1, "activate", G_CALLBACK(gui_registerUser), user_tmp);
+	gtk_box_pack_start(GTK_BOX(box),pass_entry1,FALSE,FALSE,0);
+	gtk_widget_show(pass_entry1);
+	/*Creates entry for password*/
+	label = gtk_label_new("Confirm Password");
+	gtk_box_pack_start(GTK_BOX(box),label,FALSE,FALSE,0);
+	gtk_widget_show(label);
+	pass_entry2 = gtk_entry_new();
+	user_tmp->password_entry2 = pass_entry2;
+	gtk_entry_set_visibility(GTK_ENTRY(pass_entry2), FALSE);
+	g_signal_connect(pass_entry2, "activate", G_CALLBACK(gui_registerUser), user_tmp);
+	gtk_box_pack_start(GTK_BOX(box),pass_entry2,FALSE,FALSE,0);
+	gtk_widget_show(pass_entry2);
+	/*Creates register button*/
+	button = gtk_button_new_with_label("Register");
+	g_signal_connect(button, "clicked", G_CALLBACK(gui_registerUser), user_tmp);
+	gtk_box_pack_start(GTK_BOX(box),button,FALSE,FALSE,0);
+	gtk_widget_show(button);
+	/*Show window*/
+	gtk_widget_show(box);
+	gtk_container_add(GTK_CONTAINER(register_window), box);
+	gtk_widget_show(register_window);
+}
+
+/*Makes the main screen of the program. From here the user can access contacts and send messages.*/
+void gui_mainScreen(GtkWidget *widget, gpointer data){
+	GtkWidget *window;
+	GtkWidget *button;
+	GtkWidget *box;
+	GtkWidget *entry, *name_entry;
+	GtkWidget *label;
+	GtkEntryBuffer *buffer;
+	DATA *data_tmp = g_malloc(sizeof(*data_tmp));
+	data_tmp->data1 = NULL;
+	data_tmp->data2 = NULL;
+	data_tmp->data3 = NULL;
+	
+	/*Create window*/
+	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_default_size((GtkWindow*) window, 500, 500);
+	
+	/*Connects delete_event signal to main window so that it closes when the X is clicked*/
+	g_signal_connect(window, "delete_event", G_CALLBACK(delete_event), NULL);
+	gtk_container_set_border_width(GTK_CONTAINER(window), 10);
+	
+	/*Create a vertical box (vbox) to put the text entry fields and login, register, etc. buttons*/
+	box = gtk_vbox_new(FALSE, 0);
+	
+	/*Creates text entry for the username to send the message to*/
+	label = gtk_label_new("Username");
+	gtk_box_pack_start(GTK_BOX(box),label,FALSE,FALSE,0);
+	gtk_widget_show(label);
+	name_entry = gtk_entry_new();
+	data_tmp->data1 = name_entry;
+	g_signal_connect(name_entry, "activate", G_CALLBACK(gui_sendMessage), data_tmp);
+	gtk_box_pack_start(GTK_BOX(box),name_entry,FALSE,FALSE,0);
+	gtk_widget_show(name_entry);
+	
+	/*Creates text entry for writing messages*/	
+	label = gtk_label_new("Message");
+	gtk_box_pack_start(GTK_BOX(box),label,FALSE,FALSE,0);
+	gtk_widget_show(label);
+	buffer = gtk_entry_buffer_new(NULL, -1);
+	data_tmp->data2 = buffer;
+	entry = gtk_entry_new_with_buffer (buffer);
+	g_signal_connect(entry, "activate", G_CALLBACK(gui_sendMessage), data_tmp);
+	gtk_box_pack_start(GTK_BOX(box),entry,FALSE,FALSE,0);
+	gtk_widget_show(entry);
+	
+	/*Creates button to send messages*/
+	button = gtk_button_new_with_label("Send");
+	g_signal_connect(button, "clicked", G_CALLBACK(gui_sendMessage), data_tmp);
+	gtk_box_pack_start(GTK_BOX(box),button,FALSE,FALSE,0);
+	gtk_widget_show(button);
+
+	/*button for contacts*/
+	button = gtk_button_new_with_label("Contacts");
+	g_signal_connect(button, "clicked", G_CALLBACK(gui_contactsList), NULL);
+	gtk_box_pack_start(GTK_BOX(box),button,FALSE,FALSE,0);
+	gtk_widget_show(button);
+	
+	gtk_widget_show(box);
+	gtk_container_add(GTK_CONTAINER(window), box);
+	gtk_widget_show(window);
+}
+
+/*Sends the message*/
+void gui_sendMessage(GtkWidget *widget, gpointer data){
+	DATA *data_tmp = (DATA*) data;
+	GtkEntryBuffer *buffer = (GtkEntryBuffer*) data_tmp->data2;
+	gchar *username;
+	gchar *text;
+	
+	if(gtk_entry_get_text_length(GTK_ENTRY(data_tmp->data1)) == 0){
+		g_print("Please enter an username.\n");
+	}
+	else if(gtk_entry_buffer_get_length(buffer) == 0){
+		g_print("Please enter a message.\n");
+	}
+	else{
+		username = gtk_entry_get_text(GTK_ENTRY(data_tmp->data1));
+		text = gtk_entry_buffer_get_text(buffer);
+		g_print("Username: %s Message: %s\n", username, text);
+	}
+}
+
+void gui_contactsList(GtkWidget *widget){
+	GtkWidget *contacts_window;
+	GtkWidget *scrolled_window;
+	GtkWidget *button;
+	GtkWidget *box;
+	GtkWidget *table;
+	GtkWidget *label;
+	GtkWidget *Friend;
+	//GtkEntryBuffer *Buffer;
+	char buffer[32];
+	int i;
+
+	FRIENDS *friends_tmp = g_malloc(sizeof(*friends_tmp));
+	friends_tmp->friends1 = NULL;
+
+	contacts_window = gtk_dialog_new ();
+
+	gtk_window_set_default_size((GtkWindow*) contacts_window, 500, 500);
+
+	g_signal_connect(contacts_window, "delete_event", G_CALLBACK(delete_event), NULL);
+	gtk_window_set_title (GTK_WINDOW (contacts_window), "Contacts");
+	gtk_container_set_border_width(GTK_CONTAINER(contacts_window), 10);
+
+	box = gtk_vbox_new(FALSE, 0);
+
+	/* create scrollbar with table of boxes for friends*/
+	scrolled_window = gtk_scrolled_window_new (NULL, NULL);
+	gtk_container_set_border_width (GTK_CONTAINER (scrolled_window), 10);
+	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolled_window),
+                                    GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+
+	gtk_box_pack_start (GTK_BOX (GTK_DIALOG(contacts_window)->vbox), scrolled_window, 
+			TRUE, TRUE, 0);
+    gtk_widget_show (scrolled_window);
+
+    table = gtk_table_new (10, 0, FALSE);
+
+    gtk_table_set_row_spacings (GTK_TABLE (table), 10);
+    gtk_table_set_col_spacings (GTK_TABLE (table), 10);
+
+    gtk_scrolled_window_add_with_viewport (
+                   GTK_SCROLLED_WINDOW (scrolled_window), table);
+    gtk_widget_show (table);
+
+    for (i = 0; i < 10; i++) {
+        sprintf (buffer, "Empty\n");
+	  	button = gtk_toggle_button_new_with_label (buffer);
+	  	gtk_table_attach_defaults (GTK_TABLE (table), button,
+	                             0, 1, i, i+1);
+       	gtk_widget_show (button);
+    }
+    
+    /* add or delete friend */
+ //    label = gtk_label_new("Add or Delete Friend");
+	// gtk_box_pack_start(GTK_BOX(box),label,FALSE,FALSE,0);
+	// gtk_widget_show(label);
+	// Friend = gtk_entry_new();
+	// friends_tmp->friends1 = Friend;
+	// g_signal_connect(Friend, "activate", G_CALLBACK(gui_friendRequest), friends_tmp);
+	// gtk_box_pack_start(GTK_BOX(box),Friend,FALSE,FALSE,0);
+	// gtk_widget_show(Friend);
+
+    /* add or delete friend button */
+    button = gtk_button_new_with_label ("Manage friends");
+    g_signal_connect(button, "clicked", G_CALLBACK(gtk_widget_destroy), contacts_window);
+    gtk_widget_set_can_default (button, TRUE);
+    gtk_box_pack_start(GTK_BOX (GTK_DIALOG (contacts_window)->action_area), button, TRUE, TRUE, 0);
+	gtk_widget_show(button);
+
+    /* close button */
+    button = gtk_button_new_with_label ("close");
+    g_signal_connect_swapped (button, "clicked",
+			      G_CALLBACK (gtk_widget_destroy),
+			      contacts_window);
+    gtk_widget_set_can_default (button, TRUE);
+    gtk_box_pack_start(GTK_BOX (GTK_DIALOG (contacts_window)->action_area), button, TRUE, TRUE, 0);
+	gtk_widget_show(button);
+
+	/* show window */
+	gtk_widget_show (contacts_window);
+
+}
+
+/* enter username to delete or add friend */
+void gui_friendRequest(GtkWidget *widget, gpointer friends){
+	FRIENDS *friends_tmp = (FRIENDS*) friends;
+	gchar *username;
+
+	if(gtk_entry_get_text_length(GTK_ENTRY(friends_tmp->friends1)) == 0){
+		g_print("Please enter an username.\n");
+	}	
+	else{
+		username = gtk_entry_get_text(GTK_ENTRY(friends_tmp->friends1));
+		g_print("Username: %s\n", username);
+	}
+
+}

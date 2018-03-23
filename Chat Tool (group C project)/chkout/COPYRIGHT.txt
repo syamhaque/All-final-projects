@@ -1,0 +1,26 @@
+COPYRIGHT.txt
+
+CatChat®
+
+COPYRIGHT Crystal Kingsmen® 2018
+All Rights reserved (except for the function PrintCurrentTime() rights belong to eecs 22 staff)
+
+Associated with:
+	University of California Irvine
+
+Authors:
+
+Jesse Corrales-Lozano
+Mohammed Haque
+Jose Alberto Padilla
+Jordan Paul Bonecutter
+Ralph Hieu Cao Tran
+
+(c) 2018 EECS 22L Crystal Kingsmen. This work is the intellectual property of EECS 22L Crystal Kingsmen. Permission is granted for this material to be shared for non-commercial, educational purposes, provided that this copyright statement appears on the reproduced materials and notice is given that the copying is by permission of EECS 22L Crystal Kingsmen. To disseminate other or to republish requires written permissions from EECS 22L Crystal Kingsmen. All rights reserved.
+
+For more info contact:
+	Jordan Bonecutter
+	Jesse Corrales-Lozano
+	Jose Padilla
+	Ralph Tran
+	Syam Haque
