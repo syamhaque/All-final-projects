@@ -1,0 +1,14 @@
+Authors: Crystal Software (Team 19)
+Jesse Corrales-Lozano
+Mohammed Haque
+Jose Alberto Padilla
+Sean Michael Santarsiero
+Ralph Hieu Cao Tran
+
+(c) 2018 Crystal Software. This work is the intellectual property of
+Crystal Software. Permission is granted for this material to be shared
+for non-commercial, educational purposes, provided that this
+copyright statement appears on the reproduced materials and notice
+is given that the copying is by permission of Crystal Software. To
+disseminate other or to republish requires written permissions from
+Crystal Software. All rights reserved.
